@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block meta_description %}WolfEye live threat intelligence dashboard — real-time IOC trends, alert severity, and geolocation overview.{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <h1 class="page-title">
+    <i class="bi bi-speedometer2 me-2 text-accent"></i>Dashboard
+  </h1>
+  <p class="page-subtitle text-muted">Real-time threat intelligence overview</p>
+</div>
+
+<!-- ── KPI Cards ─────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4" id="kpi-row">
+  <div class="col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon bg-primary-subtle">
+        <i class="bi bi-shield-exclamation text-primary"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Total IOCs</div>
+        <div class="kpi-value" id="kpi-total-iocs">—</div>
+        <div class="kpi-delta" id="kpi-iocs-delta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon bg-danger-subtle">
+        <i class="bi bi-bell-fill text-danger"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Active Alerts</div>
+        <div class="kpi-value" id="kpi-active-alerts">—</div>
+        <div class="kpi-delta" id="kpi-alerts-delta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon bg-warning-subtle">
+        <i class="bi bi-exclamation-triangle text-warning"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">High Severity</div>
+        <div class="kpi-value" id="kpi-high-severity">—</div>
+        <div class="kpi-delta" id="kpi-severity-delta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon bg-success-subtle">
+        <i class="bi bi-check-circle text-success"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Resolved Today</div>
+        <div class="kpi-value" id="kpi-resolved-today">—</div>
+        <div class="kpi-delta" id="kpi-resolved-delta"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Charts Row ────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <!-- IOC Trend -->
+  <div class="col-xl-8">
+    <div class="card card-dark h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h2 class="card-title mb-0">IOC Ingestion Trend</h2>
+        <div class="btn-group btn-group-sm" role="group" id="trend-period">
+          <button type="button" class="btn btn-outline-secondary active" data-days="7">7d</button>
+          <button type="button" class="btn btn-outline-secondary" data-days="14">14d</button>
+          <button type="button" class="btn btn-outline-secondary" data-days="30">30d</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <canvas id="chart-trend" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Severity Mix -->
+  <div class="col-xl-4">
+    <div class="card card-dark h-100">
+      <div class="card-header">
+        <h2 class="card-title mb-0">Alert Severity</h2>
+      </div>
+      <div class="card-body d-flex flex-column align-items-center justify-content-center">
+        <canvas id="chart-severity" height="200"></canvas>
+        <div class="chart-legend mt-3" id="severity-legend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Bottom Row ────────────────────────────────────────────────────── -->
+<div class="row g-3">
+  <!-- Top Countries -->
+  <div class="col-md-6 col-xl-4">
+    <div class="card card-dark h-100">
+      <div class="card-header">
+        <h2 class="card-title mb-0">Top Countries</h2>
+      </div>
+      <div class="card-body p-0">
+        <canvas id="chart-countries" class="p-3" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- IOC Type Mix -->
+  <div class="col-md-6 col-xl-4">
+    <div class="card card-dark h-100">
+      <div class="card-header">
+        <h2 class="card-title mb-0">IOC Types</h2>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="chart-ioc-types" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Alerts -->
+  <div class="col-xl-4">
+    <div class="card card-dark h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h2 class="card-title mb-0">Recent Alerts</h2>
+        <a href="{{ url_for('alerts.list_alerts') }}" class="btn btn-sm btn-link text-accent p-0">View all</a>
+      </div>
+      <div class="card-body p-0">
+        <ul class="alert-feed list-unstyled mb-0" id="recent-alerts-list">
+          <li class="alert-feed-placeholder text-muted text-center py-4">
+            <i class="bi bi-hourglass-split fs-3 d-block mb-2"></i>
+            Loading…
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
