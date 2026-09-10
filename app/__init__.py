@@ -65,8 +65,9 @@ def create_app(config_name: str | None = None) -> Flask:
     from app.routes.iocs import iocs_bp
     from app.routes.stats import stats_bp
     from app.routes.system import system_bp
+    from app.routes.observations import observations_bp
 
-    for bp in (auth_bp, iocs_bp, alerts_bp, stats_bp, system_bp):
+    for bp in (auth_bp, iocs_bp, alerts_bp, stats_bp, system_bp, observations_bp):
         app.register_blueprint(bp)
 
     # ------------------------------------------------------------------

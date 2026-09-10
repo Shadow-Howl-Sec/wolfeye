@@ -1,0 +1,16 @@
+CICIDS2017 Optimized 1D Conv1D-LSTM Classification Report
+============================================================
+
+                precision    recall  f1-score   support
+
+          Bots     0.1884    0.6530    0.2925       389
+   Brute Force     0.8804    0.7683    0.8205      1830
+          DDoS     0.9893    0.9757    0.9824     25603
+           DoS     0.9942    0.8970    0.9431     38749
+Normal Traffic     0.9877    0.9769    0.9823    418979
+ Port Scanning     0.7396    0.9982    0.8497     18139
+   Web Attacks     0.1916    0.9324    0.3178       429
+
+      accuracy                         0.9704    504118
+     macro avg     0.7102    0.8859    0.7412    504118
+  weighted avg     0.9777    0.9704    0.9728    504118

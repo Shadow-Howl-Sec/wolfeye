@@ -3,7 +3,7 @@ app/services/scheduler.py
 --------------------------
 APScheduler setup for background jobs:
 
-    1. Ingestion job  — pulls IOCs from URLhaus + ThreatFox
+    1. Ingestion job  — pulls IOCs from free public threat feeds
     2. Enrichment job — enriches unenriched/stale IOCs
     3. Scoring job    — runs Member B's model and creates alerts
 

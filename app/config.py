@@ -43,6 +43,7 @@ class BaseConfig:
     SHODAN_API_KEY: str = os.getenv("SHODAN_API_KEY", "")
     ABUSEIPDB_API_KEY: str = os.getenv("ABUSEIPDB_API_KEY", "")
     THREATFOX_API_KEY: str = os.getenv("THREATFOX_API_KEY", "")
+    LOCAL_INGEST_TOKEN: str = os.getenv("LOCAL_INGEST_TOKEN", "")
 
     # Email alert settings
     SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")

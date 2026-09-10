@@ -1,0 +1,21 @@
+{
+    "rf_accuracy": 0.9988355900801003,
+    "rf_precision": 0.998798934512217,
+    "rf_recall": 0.9988355900801003,
+    "rf_f1": 0.9987721657287613,
+    "rf_train_time_sec": 119.5221619606018,
+    "cnn_train_time_sec": 2174.3461349010468,
+    "total_pipeline_time_sec": 2344.627580881119,
+    "old_cnn_lstm_accuracy": 0.4324,
+    "old_cnn_lstm_f1_macro": 0.2738,
+    "new_cnn_lstm_accuracy": 0.9704275586271468,
+    "new_cnn_lstm_precision_weighted": 0.9776894802414499,
+    "new_cnn_lstm_recall_weighted": 0.9704275586271468,
+    "new_cnn_lstm_f1_weighted": 0.9728265853785126,
+    "new_cnn_lstm_precision_macro": 0.7101779717500772,
+    "new_cnn_lstm_recall_macro": 0.8859343462057182,
+    "new_cnn_lstm_f1_macro": 0.7411982018858547,
+    "new_cnn_lstm_roc_auc_ovr_macro": 0.997989125765469,
+    "new_cnn_lstm_roc_auc_ovr_weighted": 0.9967504082533376,
+    "test_sample_count": 504118
+}

@@ -6,16 +6,23 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                      Threat Feeds (Public)                   │
 │                                                             │
-│   URLhaus (abuse.ch)          ThreatFox (abuse.ch)          │
-│   ─ Malicious URLs            ─ IPs, Domains, Hashes        │
-│   ─ No API key needed         ─ Optional API key            │
-└──────────────────────────┬──────────────────────────────────┘
-                           │ HTTP pull (APScheduler, every 60 min)
+│   URLhaus / ThreatFox / MalwareBazaar / Feodo Tracker      │
+│   ─ URLs, IPs, domains, hashes                              │
+│   ─ Free public feeds; API keys optional                    │
+└──────────────────────────┬───────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│       Local Security Agent (opt-in, metadata only)           │
+│   email / download / file / network / application events     │
+│   POST /api/observations → extract indicators, no raw content│
+└──────────────────────────┬───────────────────────────────────┘
+                           │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
 │             Ingestion Service (app/services/ingestion.py)    │
 │                                                             │
-│   1. Fetch raw feed data                                    │
+│   1. Fetch public threat feeds                              │
 │   2. Normalize → {value, type, source, first_seen}          │
 │   3. Deduplicate via UNIQUE(value, type) constraint         │
 │   4. Persist to IOC table + write AuditLog                  │
@@ -172,3 +179,4 @@
 | Input validation | `get_json(silent=True)` + explicit field checks on all POST routes |
 | CORS | `flask-cors` with `supports_credentials=True`; restrict origins in prod |
 | API keys | Never hardcoded; loaded from `os.getenv()` via `app.config` |
+| Local telemetry | Agent token required; only extracted indicators are stored; raw content is not retained |

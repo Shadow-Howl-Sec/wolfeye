@@ -7,6 +7,8 @@ deduplicated, normalised records into the IOC table.
 Supported feeds:
     * URLhaus  (abuse.ch) — no API key required
     * ThreatFox (abuse.ch) — API key optional (higher rate limit with key)
+    * MalwareBazaar (abuse.ch) — recent malware hashes, no API key required
+    * Feodo Tracker (abuse.ch) — active botnet command-and-control IPs
 
 The service is called directly by the APScheduler job in scheduler.py.
 """
@@ -32,6 +34,8 @@ logger = logging.getLogger(__name__)
 
 URLHAUS_RECENT_URL = "https://urlhaus-api.abuse.ch/v1/urls/recent/"
 THREATFOX_API_URL = "https://threatfox-api.abuse.ch/api/v1/"
+MALWAREBAZAAR_API_URL = "https://mb-api.abuse.ch/api/v1/"
+FEODO_IP_BLOCKLIST_URL = "https://feodotracker.abuse.ch/downloads/ipblocklist_recommended.txt"
 
 REQUEST_TIMEOUT = 15  # seconds
 
@@ -165,6 +169,68 @@ def fetch_threatfox(days: int = 1, api_key: str = "") -> list[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
+# MalwareBazaar and Feodo Tracker feeds
+# ---------------------------------------------------------------------------
+
+def fetch_malwarebazaar(limit: int = 100) -> list[dict[str, Any]]:
+    """Fetch recent malware SHA-256 indicators from MalwareBazaar."""
+    try:
+        resp = requests.post(
+            MALWAREBAZAAR_API_URL,
+            data={"query": "get_recent", "selector": "time"},
+            timeout=REQUEST_TIMEOUT,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except (requests.RequestException, ValueError) as exc:
+        logger.error("MalwareBazaar fetch failed: %s", exc)
+        return []
+
+    iocs: list[dict[str, Any]] = []
+    for entry in (data.get("data") or [])[:limit]:
+        value = entry.get("sha256_hash")
+        if not value:
+            continue
+        first_seen = None
+        raw_date = entry.get("first_seen")
+        if raw_date:
+            try:
+                first_seen = datetime.fromisoformat(raw_date.replace(" ", "T"))
+            except ValueError:
+                pass
+        iocs.append(_normalize_ioc(value, IOCType.HASH, "malwarebazaar", first_seen))
+    logger.info("MalwareBazaar: fetched %d hashes", len(iocs))
+    return iocs
+
+
+def fetch_feodo_tracker(limit: int = 200) -> list[dict[str, Any]]:
+    """Fetch active botnet C2 IPs from Feodo Tracker's public blocklist."""
+    try:
+        resp = requests.get(FEODO_IP_BLOCKLIST_URL, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        logger.error("Feodo Tracker fetch failed: %s", exc)
+        return []
+
+    iocs: list[dict[str, Any]] = []
+    for line in resp.text.splitlines():
+        value = line.strip()
+        if not value or value.startswith("#"):
+            continue
+        # The recommended list is one IP per line; ignore malformed rows.
+        import ipaddress
+        try:
+            ipaddress.ip_address(value)
+        except ValueError:
+            continue
+        iocs.append(_normalize_ioc(value, IOCType.IP, "feodo_tracker"))
+        if len(iocs) >= limit:
+            break
+    logger.info("Feodo Tracker: fetched %d IPs", len(iocs))
+    return iocs
+
+
+# ---------------------------------------------------------------------------
 # Persist & deduplicate
 # ---------------------------------------------------------------------------
 
@@ -182,6 +248,9 @@ def ingest_iocs(ioc_dicts: list[dict[str, Any]], app_context=None) -> tuple[int,
     duplicates = 0
 
     for entry in ioc_dicts:
+        # Isolate duplicate violations so one repeated IOC cannot roll back
+        # valid indicators already staged in this batch.
+        savepoint = db.session.begin_nested()
         try:
             ioc = IOC(
                 value=entry["value"],
@@ -199,12 +268,13 @@ def ingest_iocs(ioc_dicts: list[dict[str, Any]], app_context=None) -> tuple[int,
                 detail=f"Source: {entry['source']}",
             )
             db.session.add(log)
+            savepoint.commit()
             inserted += 1
         except IntegrityError:
-            db.session.rollback()
+            savepoint.rollback()
             duplicates += 1
         except Exception as exc:
-            db.session.rollback()
+            savepoint.rollback()
             logger.error("Unexpected error persisting IOC %r: %s", entry.get("value"), exc)
 
     db.session.commit()
@@ -231,13 +301,17 @@ def run_ingestion(app) -> dict[str, Any]:
 
         urlhaus_iocs = fetch_urlhaus(limit=200)
         threatfox_iocs = fetch_threatfox(days=1, api_key=tf_key)
+        malwarebazaar_iocs = fetch_malwarebazaar(limit=100)
+        feodo_iocs = fetch_feodo_tracker(limit=200)
 
-        all_iocs = urlhaus_iocs + threatfox_iocs
+        all_iocs = urlhaus_iocs + threatfox_iocs + malwarebazaar_iocs + feodo_iocs
         inserted, dupes = ingest_iocs(all_iocs)
 
         summary = {
             "urlhaus_fetched": len(urlhaus_iocs),
             "threatfox_fetched": len(threatfox_iocs),
+            "malwarebazaar_fetched": len(malwarebazaar_iocs),
+            "feodo_tracker_fetched": len(feodo_iocs),
             "total_fetched": len(all_iocs),
             "inserted": inserted,
             "duplicates": dupes,

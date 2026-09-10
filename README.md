@@ -48,7 +48,7 @@ _Automate threat detection. Accelerate response. Stay ahead of adversaries._
 | ------------------------------ | --------------------------------------------------------------------- |
 | 🔄 **Live Feed Ingestion**     | Automated collection from URLhaus and ThreatFox with deduplication    |
 | 🔍 **Multi-Source Enrichment** | VirusTotal, Shodan, and AbuseIPDB reputation lookups per IOC          |
-| 🤖 **ML Anomaly Detection**    | Isolation Forest model scores each indicator for novelty and risk     |
+| 🤖 **ML Anomaly Detection**    | Isolation Forest scores IOCs; Track B adds supervised CNN-LSTM intrusion detection |
 | 🚨 **Automated Alerting**      | Severity-based alert generation with optional email notifications     |
 | 📖 **Response Playbooks**      | Predefined automated response actions triggered by alert rules        |
 | 🗺️ **Geolocation Map**         | Leaflet-powered world map visualizing IOC origins                     |
@@ -56,6 +56,7 @@ _Automate threat detection. Accelerate response. Stay ahead of adversaries._
 | 📄 **PDF Reporting**           | Exportable incident reports via WeasyPrint                            |
 | 🔐 **Role-Based Access**       | Admin and read-only demo roles with session-based authentication      |
 | 📦 **Audit Trail**             | Full audit log of analyst actions per IOC                             |
+| 🛰️ **Live Host Telemetry**     | Metadata-only agent intake for email, downloads, files, IPs, and apps |
 
 ---
 
@@ -65,7 +66,7 @@ _Automate threat detection. Accelerate response. Stay ahead of adversaries._
 | -------------------- | -------------------------------------------------------- |
 | **Backend**          | Python 3.11+ · Flask 3.0                                 |
 | **ORM / Database**   | SQLAlchemy · SQLite (dev) · PostgreSQL / Supabase (prod) |
-| **Machine Learning** | scikit-learn · Isolation Forest                          |
+| **Machine Learning** | scikit-learn · Isolation Forest · Keras 3 CNN-LSTM        |
 | **Threat Feeds**     | URLhaus · ThreatFox                                      |
 | **Enrichment APIs**  | VirusTotal · Shodan · AbuseIPDB                          |
 | **Task Scheduling**  | APScheduler                                              |
@@ -144,6 +145,39 @@ flask run
 ```
 
 Navigate to **[http://localhost:5000](http://localhost:5000)**
+
+### Run the Track B CNN-LSTM interface
+
+The supervised intrusion-detection interface runs alongside the Flask API as a
+Streamlit application. The pretrained model and evaluation artifacts are
+included under `ml/`.
+
+```bash
+streamlit run app.py
+```
+
+Navigate to **[http://localhost:8501](http://localhost:8501)**. To enable the
+real-sample presets, place `cicids2017_cleaned.csv` in the repository root.
+
+### Connect a local security agent
+
+The backend accepts metadata-only observations at `POST /api/observations`.
+It extracts URLs, domains, IPs, hashes, and email addresses on the server and
+stores only the resulting indicators. It does not receive file contents or
+execute anything on the host.
+
+Set `LOCAL_INGEST_TOKEN` in `.env`, then send events with that token:
+
+```bash
+curl -X POST http://localhost:5000/api/observations \
+  -H "Content-Type: application/json" \
+  -H "X-WolfEye-Agent-Token: $LOCAL_INGEST_TOKEN" \
+  -d '{"agent_id":"laptop-01","events":[{"kind":"download","url":"https://example.test/dropper.exe","sha256":"<sha256>"},{"kind":"network","remote_ip":"198.51.100.10"}]}'
+```
+
+The scheduler polls URLhaus, ThreatFox, MalwareBazaar, and Feodo Tracker.
+VirusTotal, AbuseIPDB, and Shodan remain optional enrichments; the free feeds
+work without API keys.
 
 | Account        | Username | Password          |
 | -------------- | -------- | ----------------- |
