@@ -48,6 +48,7 @@ class IOC(db.Model):
     """
 
     __tablename__ = "ioc"
+    __allow_unmapped__ = True
 
     # Primary key
     id: int = db.Column(db.Integer, primary_key=True)

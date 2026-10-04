@@ -29,6 +29,7 @@ class User(db.Model):
     """Platform user with hashed password and role."""
 
     __tablename__ = "user"
+    __allow_unmapped__ = True
 
     id: int = db.Column(db.Integer, primary_key=True)
     username: str = db.Column(db.String(128), unique=True, nullable=False, index=True)

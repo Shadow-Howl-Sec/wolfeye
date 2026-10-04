@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+  <h1 class="page-title"><i class="bi bi-file-earmark-pdf me-2 text-accent"></i>Reports</h1>
+  <p class="page-subtitle text-muted">Export evidence for investigations and handoffs.</p>
+</div>
+<div class="row g-3">
+  <div class="col-md-6"><div class="card card-dark report-card"><i class="bi bi-filetype-csv"></i><h2>IOC inventory</h2><p>Download the current indicator inventory as CSV.</p><a class="btn btn-primary" href="/api/iocs/export?fmt=csv">Download CSV</a></div></div>
+  <div class="col-md-6"><div class="card card-dark report-card"><i class="bi bi-filetype-json"></i><h2>IOC data</h2><p>Download machine-readable IOC data as JSON.</p><a class="btn btn-outline-primary" href="/api/iocs/export?fmt=json">Download JSON</a></div></div>
+</div>
+{% endblock %}

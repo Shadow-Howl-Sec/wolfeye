@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import os
+import importlib
 
 from flask import Flask
 from flask_cors import CORS
@@ -66,8 +67,17 @@ def create_app(config_name: str | None = None) -> Flask:
     from app.routes.stats import stats_bp
     from app.routes.system import system_bp
     from app.routes.observations import observations_bp
+    from app.routes.main import main_bp
 
-    for bp in (auth_bp, iocs_bp, alerts_bp, stats_bp, system_bp, observations_bp):
+    for bp in (
+        main_bp,
+        auth_bp,
+        iocs_bp,
+        alerts_bp,
+        stats_bp,
+        system_bp,
+        observations_bp,
+    ):
         app.register_blueprint(bp)
 
     # ------------------------------------------------------------------
@@ -75,7 +85,7 @@ def create_app(config_name: str | None = None) -> Flask:
     # ------------------------------------------------------------------
     with app.app_context():
         # Import models so SQLAlchemy is aware of them before create_all()
-        import app.models  # noqa: F401
+        importlib.import_module("app.models")
         db.create_all()
         _seed_default_users(app)
 

@@ -51,6 +51,7 @@ class Alert(db.Model):
     """
 
     __tablename__ = "alert"
+    __allow_unmapped__ = True
 
     id: int = db.Column(db.Integer, primary_key=True)
     ioc_id: int = db.Column(

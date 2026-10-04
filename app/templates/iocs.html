@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Indicators{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+  <h1 class="page-title"><i class="bi bi-shield-exclamation me-2 text-accent"></i>Indicators of Compromise</h1>
+  <p class="page-subtitle text-muted">Search, filter, and export observed indicators.</p>
+</div>
+<div class="card card-dark">
+  <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <h2 class="card-title mb-0">IOC inventory</h2>
+    <div class="d-flex gap-2">
+      <input class="form-control form-control-sm table-search" id="ioc-search" type="search" placeholder="Search values">
+      <a class="btn btn-sm btn-outline-secondary" href="/api/iocs/export?fmt=csv"><i class="bi bi-download"></i> Export</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead><tr><th>Value</th><th>Type</th><th>Source</th><th>Score</th><th>Status</th><th>First seen</th></tr></thead>
+      <tbody id="iocs-table"><tr><td colspan="6" class="text-center text-muted py-5">Loading indicators…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/iocs.js') }}"></script>{% endblock %}

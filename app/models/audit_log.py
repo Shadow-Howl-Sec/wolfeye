@@ -43,6 +43,7 @@ class AuditLog(db.Model):
     """
 
     __tablename__ = "audit_log"
+    __allow_unmapped__ = True
 
     id: int = db.Column(db.Integer, primary_key=True)
     ioc_id: int = db.Column(

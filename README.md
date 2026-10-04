@@ -141,7 +141,7 @@ python data/seed.py
 ### 6 — Start the development server
 
 ```bash
-flask run
+flask --app "app:create_app('development')" run
 ```
 
 Navigate to **[http://localhost:5000](http://localhost:5000)**
