@@ -67,6 +67,7 @@ def create_app(config_name: str | None = None) -> Flask:
     from app.routes.stats import stats_bp
     from app.routes.system import system_bp
     from app.routes.observations import observations_bp
+    from app.routes.integrations import integrations_bp
     from app.routes.main import main_bp
 
     for bp in (
@@ -77,6 +78,7 @@ def create_app(config_name: str | None = None) -> Flask:
         stats_bp,
         system_bp,
         observations_bp,
+        integrations_bp,
     ):
         app.register_blueprint(bp)
 

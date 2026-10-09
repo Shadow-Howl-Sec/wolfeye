@@ -46,7 +46,7 @@ _Automate threat detection. Accelerate response. Stay ahead of adversaries._
 
 | Feature                        | Description                                                           |
 | ------------------------------ | --------------------------------------------------------------------- |
-| 🔄 **Live Feed Ingestion**     | Automated collection from URLhaus and ThreatFox with deduplication    |
+| 🔄 **Live Feed Ingestion**     | Automated collection from URLhaus, ThreatFox, MalwareBazaar, and Feodo Tracker with deduplication |
 | 🔍 **Multi-Source Enrichment** | VirusTotal, Shodan, and AbuseIPDB reputation lookups per IOC          |
 | 🤖 **ML Anomaly Detection**    | Isolation Forest scores IOCs; Track B adds supervised CNN-LSTM intrusion detection |
 | 🚨 **Automated Alerting**      | Severity-based alert generation with optional email notifications     |
@@ -57,6 +57,7 @@ _Automate threat detection. Accelerate response. Stay ahead of adversaries._
 | 🔐 **Role-Based Access**       | Admin and read-only demo roles with session-based authentication      |
 | 📦 **Audit Trail**             | Full audit log of analyst actions per IOC                             |
 | 🛰️ **Live Host Telemetry**     | Metadata-only agent intake for email, downloads, files, IPs, and apps |
+| 🔗 **MISP / OpenCTI Sharing**  | Optional bidirectional MISP sync and OpenCTI STIX indicator context |
 
 ---
 
@@ -67,11 +68,11 @@ _Automate threat detection. Accelerate response. Stay ahead of adversaries._
 | **Backend**          | Python 3.11+ · Flask 3.0                                 |
 | **ORM / Database**   | SQLAlchemy · SQLite (dev) · PostgreSQL / Supabase (prod) |
 | **Machine Learning** | scikit-learn · Isolation Forest · Keras 3 CNN-LSTM        |
-| **Threat Feeds**     | URLhaus · ThreatFox                                      |
+| **Threat Feeds**     | URLhaus · ThreatFox · MalwareBazaar · Feodo Tracker      |
 | **Enrichment APIs**  | VirusTotal · Shodan · AbuseIPDB                          |
 | **Task Scheduling**  | APScheduler                                              |
 | **Frontend**         | Bootstrap · Chart.js · Leaflet · Jinja2                  |
-| **PDF Export**       | WeasyPrint                                               |
+| **PDF Export**       | WeasyPrint incident reports from alert evidence           |
 | **Hosting**          | Render (free tier)                                       |
 | **Keep-alive**       | UptimeRobot                                              |
 
@@ -178,6 +179,28 @@ curl -X POST http://localhost:5000/api/observations \
 The scheduler polls URLhaus, ThreatFox, MalwareBazaar, and Feodo Tracker.
 VirusTotal, AbuseIPDB, and Shodan remain optional enrichments; the free feeds
 work without API keys.
+
+### Connect MISP and OpenCTI
+
+MISP and OpenCTI are optional because OpenCTI normally requires its own
+Elasticsearch/RabbitMQ/Redis stack. Configure their API endpoints and tokens
+in `.env` to enable scheduled synchronization:
+
+```ini
+MISP_URL=https://misp.example
+MISP_KEY=your-misp-auth-key
+OPENCTI_URL=http://localhost:8080
+OPENCTI_TOKEN=your-opencti-token
+```
+
+Administrators can trigger `POST /api/integrations/misp/pull` and
+`POST /api/integrations/opencti/pull`, and publish a high-confidence IOC with
+`POST /api/integrations/misp/publish/<ioc_id>`. Community and graph context is
+retained with each IOC. An unavailable connector is logged and does not stop
+public-feed ingestion.
+
+PDF incident reports are available at
+`GET /api/alerts/<alert_id>/report`.
 
 | Account        | Username | Password          |
 | -------------- | -------- | ----------------- |

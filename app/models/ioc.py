@@ -83,6 +83,9 @@ class IOC(db.Model):
     audit_logs: list["AuditLog"] = db.relationship(
         "AuditLog", back_populates="ioc", cascade="all, delete-orphan"
     )
+    intel_context: list["IntelContext"] = db.relationship(
+        "IntelContext", back_populates="ioc", cascade="all, delete-orphan"
+    )
 
     # Unique constraint: same indicator from same source is deduplicated
     __table_args__ = (
@@ -107,6 +110,7 @@ class IOC(db.Model):
         }
         if include_enrichment and self.enrichment:
             data["enrichment"] = self.enrichment.to_dict()
+            data["intel_context"] = [item.to_dict() for item in self.intel_context]
         return data
 
     def __repr__(self) -> str:

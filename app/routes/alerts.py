@@ -12,12 +12,13 @@ from __future__ import annotations
 
 import logging
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session, Response
 
 from app import limiter
 from app.models.alert import Alert, AlertSeverity, AlertStatus
 from app.routes.auth import login_required, admin_required
 from app.services.playbooks import resolve_alert
+from app.services.reports import build_incident_report
 
 logger = logging.getLogger(__name__)
 
@@ -110,3 +111,17 @@ def resolve(alert_id: int):
         return jsonify({"error": str(exc)}), 404
 
     return jsonify({"message": "Alert resolved", "alert": alert.to_dict()}), 200
+
+
+@alerts_bp.route("/<int:alert_id>/report", methods=["GET"])
+def report(alert_id: int):
+    """Generate a PDF incident report for an alert."""
+    try:
+        pdf = build_incident_report(alert_id)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 404
+    except Exception as exc:
+        logger.error("Incident report generation failed: %s", exc)
+        return jsonify({"error": "PDF generation is unavailable", "detail": str(exc)}), 503
+    return Response(pdf, mimetype="application/pdf",
+                    headers={"Content-Disposition": f"attachment; filename=wolfeye_alert_{alert_id}.pdf"})

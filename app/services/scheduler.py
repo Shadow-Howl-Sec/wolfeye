@@ -29,6 +29,8 @@ _job_status: dict[str, dict] = {
     "ingestion": {"last_run": None, "last_result": None, "last_error": None},
     "enrichment": {"last_run": None, "last_result": None, "last_error": None},
     "scoring": {"last_run": None, "last_result": None, "last_error": None},
+    "misp": {"last_run": None, "last_result": None, "last_error": None},
+    "opencti": {"last_run": None, "last_result": None, "last_error": None},
 }
 
 
@@ -99,6 +101,18 @@ def _scoring_job(app) -> None:
         _job_status["scoring"]["last_run"] = datetime.now(timezone.utc)
 
 
+def _sharing_job(app, provider: str) -> None:
+    try:
+        from app.services.integrations import pull_misp, pull_opencti
+        with app.app_context():
+            result = pull_misp(app.config) if provider == "misp" else pull_opencti(app.config)
+        _job_status[provider].update(last_run=datetime.now(timezone.utc),
+                                     last_result=result, last_error=None)
+    except Exception as exc:
+        logger.error("%s sync failed: %s", provider, exc)
+        _job_status[provider].update(last_run=datetime.now(timezone.utc), last_error=str(exc))
+
+
 # ---------------------------------------------------------------------------
 # Scheduler lifecycle
 # ---------------------------------------------------------------------------
@@ -127,6 +141,13 @@ def start_scheduler(app) -> BackgroundScheduler:
         replace_existing=True,
         misfire_grace_time=300,
     )
+
+    _scheduler.add_job(_sharing_job, args=[app, "misp"],
+                       trigger=IntervalTrigger(minutes=max(interval_minutes, 60)),
+                       id="misp", replace_existing=True, misfire_grace_time=300)
+    _scheduler.add_job(_sharing_job, args=[app, "opencti"],
+                       trigger=IntervalTrigger(minutes=max(interval_minutes, 60)),
+                       id="opencti", replace_existing=True, misfire_grace_time=300)
 
     _scheduler.add_job(
         func=_enrichment_job,

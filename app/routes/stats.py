@@ -60,6 +60,9 @@ def summary():
     watchlisted = IOC.query.filter_by(watchlisted=True).count()
     with_score = IOC.query.filter(IOC.anomaly_score.isnot(None)).count()
     enriched = db.session.query(func.count(Enrichment.id)).scalar()
+    resolved_today = Alert.query.filter(
+        Alert.status == "resolved", Alert.updated_at >= cutoff_24h
+    ).count()
 
     return jsonify({
         "total_iocs": total_iocs,
@@ -69,6 +72,11 @@ def summary():
         "watchlisted_iocs": watchlisted,
         "iocs_with_score": with_score,
         "enriched_iocs": enriched,
+        "resolved_alerts_24h": resolved_today,
+        "high_severity_alerts": Alert.query.filter(
+            Alert.severity.in_([AlertSeverity.HIGH, AlertSeverity.CRITICAL]),
+            Alert.status == "open",
+        ).count(),
     }), 200
 
 
@@ -133,7 +141,18 @@ def top_countries():
         .all()
     )
 
-    return jsonify([{"country": r.country, "count": r.count} for r in rows]), 200
+    centroids = {
+        "US": (38.9, -77.0), "GB": (51.5, -0.1), "DE": (52.5, 13.4),
+        "FR": (48.9, 2.3), "NL": (52.1, 5.1), "RU": (55.8, 37.6),
+        "CN": (39.9, 116.4), "IN": (28.6, 77.2), "BR": (-15.8, -47.9),
+        "CA": (45.4, -75.7), "AU": (-35.3, 149.1),
+    }
+    return jsonify([
+        {"country": r.country, "count": r.count,
+         "latitude": centroids.get(r.country, (None, None))[0],
+         "longitude": centroids.get(r.country, (None, None))[1]}
+        for r in rows
+    ]), 200
 
 
 # ---------------------------------------------------------------------------

@@ -10,5 +10,6 @@ from app.models.enrichment import Enrichment  # noqa: F401
 from app.models.alert import Alert  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
 from app.models.user import User  # noqa: F401
+from app.models.intel_context import IntelContext  # noqa: F401
 
-__all__ = ["IOC", "Enrichment", "Alert", "AuditLog", "User"]
+__all__ = ["IOC", "Enrichment", "Alert", "AuditLog", "User", "IntelContext"]

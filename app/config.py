@@ -44,6 +44,11 @@ class BaseConfig:
     ABUSEIPDB_API_KEY: str = os.getenv("ABUSEIPDB_API_KEY", "")
     THREATFOX_API_KEY: str = os.getenv("THREATFOX_API_KEY", "")
     LOCAL_INGEST_TOKEN: str = os.getenv("LOCAL_INGEST_TOKEN", "")
+    MISP_URL: str = os.getenv("MISP_URL", "")
+    MISP_KEY: str = os.getenv("MISP_KEY", "")
+    MISP_VERIFY_SSL: bool = os.getenv("MISP_VERIFY_SSL", "true").lower() == "true"
+    OPENCTI_URL: str = os.getenv("OPENCTI_URL", "")
+    OPENCTI_TOKEN: str = os.getenv("OPENCTI_TOKEN", "")
 
     # Email alert settings
     SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")

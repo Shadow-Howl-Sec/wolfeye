@@ -5,8 +5,8 @@ async function loadDashboard() {
     const summary = await getJson("/api/stats/summary");
     document.getElementById("kpi-total-iocs").textContent = summary.total_iocs;
     document.getElementById("kpi-active-alerts").textContent = summary.open_alerts;
-    document.getElementById("kpi-high-severity").textContent = summary.critical_alerts;
-    document.getElementById("kpi-resolved-today").textContent = "—";
+    document.getElementById("kpi-high-severity").textContent = summary.high_severity_alerts;
+    document.getElementById("kpi-resolved-today").textContent = summary.resolved_alerts_24h;
     const [trends, severity, types] = await Promise.all([getJson("/api/stats/trends?days=7"), getJson("/api/stats/severity-mix"), getJson("/api/stats/ioc-type-mix")]);
     chart("chart-trend", { type:"line", data:{ labels:trends.map(x=>x.date), datasets:[{label:"IOCs", data:trends.map(x=>x.count), borderColor:"#43d9b1", backgroundColor:"rgba(67,217,177,.15)", fill:true, tension:.35}] }, options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }});
     chart("chart-severity", { type:"doughnut", data:{ labels:severity.map(x=>x.severity), datasets:[{data:severity.map(x=>x.count), backgroundColor:["#43d9b1","#facc15","#fb923c","#f43f5e"]}] }, options:{ plugins:{legend:{position:"bottom"}} }});
