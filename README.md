@@ -1,357 +1,207 @@
-<div align="center">
+# WolfEye
 
-# 🐺 WolfEye
+WolfEye is a cross-platform threat-intelligence and incident-response
+platform. It provides a Flask API, a SQLite/PostgreSQL data layer, scheduled
+threat-feed ingestion, optional MISP/OpenCTI integrations, and a Streamlit
+CNN-LSTM dashboard.
 
-### AI-Powered Threat Intelligence & Incident Response Platform
+## Requirements
 
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
-[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge)](LICENSE)
-[![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com)
+- Python 3.11–3.14
+- `pip`
+- API keys are optional for local testing. Public threat feeds work without
+  VirusTotal, Shodan, or AbuseIPDB keys.
 
-_Automate threat detection. Accelerate response. Stay ahead of adversaries._
+## Installation
 
-</div>
-
----
-
-## Overview
-
-**WolfEye** is an end-to-end, open-source threat intelligence and incident response platform built for security teams that need real-time visibility into malicious infrastructure. It ingests live threat feeds, enriches indicators with leading threat intelligence APIs, applies machine-learning anomaly scoring, and surfaces everything through a live analyst dashboard — all without manual toil.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                       WolfEye Pipeline                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Threat Feeds          Enrichment           ML Scoring          │
-│  ┌──────────┐    ┌───────────────────┐  ┌──────────────────┐   │
-│  │ URLhaus  │    │  VirusTotal       │  │ Isolation Forest │   │
-│  │ ThreatFox│───▶│  Shodan           │─▶│ Anomaly Scoring  │   │
-│  └──────────┘    │  AbuseIPDB        │  └────────┬─────────┘   │
-│  Ingest & Dedup  └───────────────────┘           │             │
-│                                                  ▼             │
-│                         Alerting & Playbooks ◀───┘             │
-│                                  │                             │
-│                                  ▼                             │
-│                    Live Dashboard & PDF Reports                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## ✨ Key Features
-
-| Feature                        | Description                                                           |
-| ------------------------------ | --------------------------------------------------------------------- |
-| 🔄 **Live Feed Ingestion**     | Automated collection from URLhaus, ThreatFox, MalwareBazaar, and Feodo Tracker with deduplication |
-| 🔍 **Multi-Source Enrichment** | VirusTotal, Shodan, and AbuseIPDB reputation lookups per IOC          |
-| 🤖 **ML Anomaly Detection**    | Isolation Forest scores IOCs; Track B adds supervised CNN-LSTM intrusion detection |
-| 🚨 **Automated Alerting**      | Severity-based alert generation with optional email notifications     |
-| 📖 **Response Playbooks**      | Predefined automated response actions triggered by alert rules        |
-| 🗺️ **Geolocation Map**         | Leaflet-powered world map visualizing IOC origins                     |
-| 📊 **Analytics Dashboard**     | Real-time charts (Chart.js) for trends, severity mix, and top sources |
-| 📄 **PDF Reporting**           | Exportable incident reports via WeasyPrint                            |
-| 🔐 **Role-Based Access**       | Admin and read-only demo roles with session-based authentication      |
-| 📦 **Audit Trail**             | Full audit log of analyst actions per IOC                             |
-| 🛰️ **Live Host Telemetry**     | Metadata-only agent intake for email, downloads, files, IPs, and apps |
-| 🔗 **MISP / OpenCTI Sharing**  | Optional bidirectional MISP sync and OpenCTI STIX indicator context |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer                | Technology                                               |
-| -------------------- | -------------------------------------------------------- |
-| **Backend**          | Python 3.11+ · Flask 3.0                                 |
-| **ORM / Database**   | SQLAlchemy · SQLite (dev) · PostgreSQL / Supabase (prod) |
-| **Machine Learning** | scikit-learn · Isolation Forest · Keras 3 CNN-LSTM        |
-| **Threat Feeds**     | URLhaus · ThreatFox · MalwareBazaar · Feodo Tracker      |
-| **Enrichment APIs**  | VirusTotal · Shodan · AbuseIPDB                          |
-| **Task Scheduling**  | APScheduler                                              |
-| **Frontend**         | Bootstrap · Chart.js · Leaflet · Jinja2                  |
-| **PDF Export**       | WeasyPrint incident reports from alert evidence           |
-| **Hosting**          | Render (free tier)                                       |
-| **Keep-alive**       | UptimeRobot                                              |
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.11 or higher
-- `pip` package manager
-- API keys for VirusTotal, Shodan, and AbuseIPDB _(free tiers available)_
-
-### 1 — Clone the repository
+Clone the repository and enter its directory:
 
 ```bash
 git clone https://github.com/Shadow-Howl-Sec/wolfeye.git
 cd wolfeye
 ```
 
-### 2 — Create and activate a virtual environment
+Create a virtual environment:
 
 ```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux / macOS
-source venv/bin/activate
+python -m venv .venv
 ```
 
-### 3 — Install dependencies
+Activate it:
 
-```bash
-pip install -r requirements.txt
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
 ```
 
-### 4 — Configure environment variables
+```bash
+# Linux/macOS
+source .venv/bin/activate
+```
+
+If PowerShell blocks activation, run the Windows command directly through the
+environment instead of activating it:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Install dependencies:
 
 ```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+Create the environment file:
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env
+```
+
+```bash
+# Linux/macOS
 cp .env.example .env
 ```
 
-Open `.env` and populate your API keys and credentials:
+At minimum, set a production `SECRET_KEY`. For local development, the
+application uses SQLite automatically when `DATABASE_URL` is empty.
 
-```ini
-# Core
-FLASK_ENV=development
-SECRET_KEY=your-long-random-secret
+## Run locally
 
-# Enrichment API Keys
-VIRUSTOTAL_API_KEY=your_vt_key
-SHODAN_API_KEY=your_shodan_key
-ABUSEIPDB_API_KEY=your_abuseipdb_key
+The cross-platform launcher starts the Flask API and Streamlit dashboard:
 
-# Database (leave blank for SQLite in dev)
-DATABASE_URL=
+```bash
+python scripts/run.py all
 ```
 
-### 5 — Seed the database
+Open:
+
+- API: http://127.0.0.1:5000
+- Dashboard: http://127.0.0.1:8501
+
+Stop both services with `Ctrl+C`.
+
+Run one service only:
+
+```bash
+python scripts/run.py backend
+python scripts/run.py dashboard
+```
+
+Use different ports when required:
+
+```bash
+python scripts/run.py all --backend-port 5510 --dashboard-port 8510
+```
+
+The launcher works on Windows, Linux, and macOS and uses the active Python
+interpreter instead of OS-specific `flask.exe` or `streamlit.exe` launchers.
+
+### Manual commands
+
+Backend:
+
+```bash
+python -m flask --app "app:create_app('development')" run
+```
+
+Dashboard:
+
+```bash
+python -m streamlit run app.py
+```
+
+The dashboard loads the included model and preprocessing artifacts. Put
+`cicids2017_cleaned.csv` in the repository root to enable real-data sample
+presets.
+
+## Default accounts
+
+| Account | Username | Password |
+| --- | --- | --- |
+| Read-only demo | `demo` | `wolfeye-demo` |
+| Administrator | `admin` | Set `ADMIN_PASSWORD` in `.env` |
+
+Change these credentials before deploying.
+
+## Configuration
+
+Configuration is read from `.env` or the process environment. Common settings:
+
+```ini
+FLASK_ENV=development
+SECRET_KEY=change-me
+DATABASE_URL=
+VIRUSTOTAL_API_KEY=
+SHODAN_API_KEY=
+ABUSEIPDB_API_KEY=
+LOCAL_INGEST_TOKEN=
+MISP_URL=
+MISP_KEY=
+OPENCTI_URL=
+OPENCTI_TOKEN=
+```
+
+MISP and OpenCTI are optional. OpenCTI requires its own external services.
+
+## API health checks
+
+```bash
+curl http://127.0.0.1:5000/api/system/ping
+curl http://127.0.0.1:5000/api/system/health
+```
+
+The backend also provides authentication, IOC, alert, statistics, observation,
+integration, and report endpoints under `/api`.
+
+Important endpoints:
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/auth/login` | Create a session |
+| `GET` | `/api/auth/me` | Get the current user |
+| `GET` | `/api/iocs` | List indicators |
+| `GET` | `/api/alerts` | List alerts |
+| `GET` | `/api/stats/summary` | Dashboard summary |
+| `POST` | `/api/observations` | Receive metadata-only observations |
+| `GET` | `/api/system/ping` | Liveness check |
+| `GET` | `/api/system/health` | Database and scheduler status |
+
+## Seed data and tests
+
+Seed local demo data:
 
 ```bash
 python data/seed.py
 ```
 
-### 6 — Start the development server
+Run tests:
 
 ```bash
-flask --app "app:create_app('development')" run
+python -m pytest tests/ -v
 ```
 
-Navigate to **[http://localhost:5000](http://localhost:5000)**
+## Project structure
 
-### Run the Track B CNN-LSTM interface
-
-The supervised intrusion-detection interface runs alongside the Flask API as a
-Streamlit application. The pretrained model and evaluation artifacts are
-included under `ml/`.
-
-```bash
-streamlit run app.py
+```text
+app/                  Flask factory, routes, models, services, templates
+data/seed.py          Demo data seeder
+ml/cnn_lstm/          CNN-LSTM training and inference code
+ml/outputs/           Preprocessing artifacts
+scripts/run.py        Cross-platform local launcher
+.streamlit/           Streamlit configuration
+requirements.txt      Application dependencies
+.env.example          Environment variable template
 ```
 
-Navigate to **[http://localhost:8501](http://localhost:8501)**. To enable the
-real-sample presets, place `cicids2017_cleaned.csv` in the repository root.
+## Deployment
 
-### Connect a local security agent
+The included `Procfile` provides a Gunicorn entrypoint for Render or another
+WSGI host. Set the production environment variables, including `SECRET_KEY`
+and `DATABASE_URL`, in the hosting provider's configuration.
 
-The backend accepts metadata-only observations at `POST /api/observations`.
-It extracts URLs, domains, IPs, hashes, and email addresses on the server and
-stores only the resulting indicators. It does not receive file contents or
-execute anything on the host.
+## License
 
-Set `LOCAL_INGEST_TOKEN` in `.env`, then send events with that token:
-
-```bash
-curl -X POST http://localhost:5000/api/observations \
-  -H "Content-Type: application/json" \
-  -H "X-WolfEye-Agent-Token: $LOCAL_INGEST_TOKEN" \
-  -d '{"agent_id":"laptop-01","events":[{"kind":"download","url":"https://example.test/dropper.exe","sha256":"<sha256>"},{"kind":"network","remote_ip":"198.51.100.10"}]}'
-```
-
-The scheduler polls URLhaus, ThreatFox, MalwareBazaar, and Feodo Tracker.
-VirusTotal, AbuseIPDB, and Shodan remain optional enrichments; the free feeds
-work without API keys.
-
-### Connect MISP and OpenCTI
-
-MISP and OpenCTI are optional because OpenCTI normally requires its own
-Elasticsearch/RabbitMQ/Redis stack. Configure their API endpoints and tokens
-in `.env` to enable scheduled synchronization:
-
-```ini
-MISP_URL=https://misp.example
-MISP_KEY=your-misp-auth-key
-OPENCTI_URL=http://localhost:8080
-OPENCTI_TOKEN=your-opencti-token
-```
-
-Administrators can trigger `POST /api/integrations/misp/pull` and
-`POST /api/integrations/opencti/pull`, and publish a high-confidence IOC with
-`POST /api/integrations/misp/publish/<ioc_id>`. Community and graph context is
-retained with each IOC. An unavailable connector is logged and does not stop
-public-feed ingestion.
-
-PDF incident reports are available at
-`GET /api/alerts/<alert_id>/report`.
-
-| Account        | Username | Password          |
-| -------------- | -------- | ----------------- |
-| Read-only demo | `demo`   | `wolfeye-demo`    |
-| Admin          | `admin`  | _(set in `.env`)_ |
-
----
-
-## 📁 Project Structure
-
-```
-wolfeye/
-├── app/
-│   ├── __init__.py         # Flask application factory
-│   ├── config.py           # Dev / Prod / Test configuration classes
-│   ├── models/             # SQLAlchemy models — IOC, Enrichment, Alert, AuditLog, User
-│   ├── routes/             # API blueprints — iocs, alerts, stats, auth, system
-│   ├── services/           # Business logic — ingestion, enrichment, alerting, playbooks, scheduler
-│   ├── ml/                 # Anomaly scoring interface (model.joblib)
-│   ├── templates/          # Jinja2 HTML templates
-│   └── static/             # CSS, JavaScript, and static assets
-├── data/
-│   └── seed.py             # Demo data seed script
-├── tests/
-│   ├── test_ingestion.py   # Unit tests for ingestion service
-│   └── test_api.py         # Smoke tests for API endpoints
-├── docs/
-│   └── architecture.md     # System architecture reference
-├── .env.example            # Environment variable template
-├── .gitignore
-├── requirements.txt
-├── Procfile                # Render deployment entry point
-└── README.md
-```
-
----
-
-## 📡 API Reference
-
-### Authentication
-
-| Method | Endpoint           | Description                               |
-| ------ | ------------------ | ----------------------------------------- |
-| `POST` | `/api/auth/login`  | Authenticate user, returns session cookie |
-| `POST` | `/api/auth/logout` | Invalidate session                        |
-| `GET`  | `/api/auth/me`     | Retrieve current authenticated user       |
-
-### Indicators of Compromise (IOCs)
-
-| Method   | Endpoint                     | Auth   | Description                                  |
-| -------- | ---------------------------- | ------ | -------------------------------------------- |
-| `GET`    | `/api/iocs`                  | Public | Paginated list with filters                  |
-| `GET`    | `/api/iocs/<id>`             | Public | Single IOC with enrichment and anomaly score |
-| `GET`    | `/api/iocs/export`           | Public | Bulk export (CSV or JSON)                    |
-| `GET`    | `/api/iocs/<id>/audit`       | Public | Audit trail for an IOC                       |
-| `POST`   | `/api/iocs/<id>/investigate` | Admin  | Mark IOC as investigated                     |
-| `POST`   | `/api/iocs/<id>/watchlist`   | Admin  | Add IOC to watchlist                         |
-| `DELETE` | `/api/iocs/<id>/watchlist`   | Admin  | Remove IOC from watchlist                    |
-
-### Alerts
-
-| Method | Endpoint                   | Auth   | Description                       |
-| ------ | -------------------------- | ------ | --------------------------------- |
-| `GET`  | `/api/alerts`              | Public | Paginated alert list with filters |
-| `GET`  | `/api/alerts/<id>`         | Public | Single alert detail               |
-| `POST` | `/api/alerts/<id>/resolve` | Admin  | Mark alert as resolved            |
-
-### Statistics & Analytics
-
-| Method | Endpoint                   | Description                      |
-| ------ | -------------------------- | -------------------------------- |
-| `GET`  | `/api/stats/summary`       | Aggregate dashboard counters     |
-| `GET`  | `/api/stats/trends`        | Daily IOC count trend            |
-| `GET`  | `/api/stats/top-countries` | Top countries by IOC volume      |
-| `GET`  | `/api/stats/severity-mix`  | Alert distribution by severity   |
-| `GET`  | `/api/stats/ioc-type-mix`  | IOC breakdown by type            |
-| `GET`  | `/api/stats/top-sources`   | IOC volume by threat feed source |
-
-### System
-
-| Method | Endpoint             | Description                            |
-| ------ | -------------------- | -------------------------------------- |
-| `GET`  | `/api/system/ping`   | Liveness probe (UptimeRobot heartbeat) |
-| `GET`  | `/api/system/health` | Database and scheduler status          |
-
----
-
-## 🗄️ Database Schema
-
-```
-IOC
-  id, value, type, source, first_seen, created_at, status, watchlisted, anomaly_score
-
-Enrichment
-  id, ioc_id → IOC
-  vt_reputation, vt_detections, abuseipdb_score
-  shodan_ports [JSON], country
-  raw_vt_json, raw_abuseipdb_json, raw_shodan_json
-  last_updated
-
-Alert
-  id, ioc_id → IOC, anomaly_score, severity, status, created_at, notes
-
-AuditLog
-  id, ioc_id → IOC, action, performed_by, detail, timestamp
-
-User
-  id, username, password_hash, role, created_at, last_login
-```
-
----
-
-## 🧪 Running Tests
-
-```bash
-pytest tests/ -v
-```
-
-All tests run against an in-memory SQLite database — no external API calls are made during the test suite.
-
----
-
-## ☁️ Deployment (Render)
-
-1. **Push to GitHub** — Render auto-deploys on every push to `main`.
-2. **Set environment variables** in the Render dashboard (mirror your `.env.example`).
-3. **Set `DATABASE_URL`** to your Supabase PostgreSQL connection string.
-4. **Seed the database** — SSH into the service or add a one-off job to run `python data/seed.py`.
-5. **Configure UptimeRobot** to ping `https://your-app.onrender.com/api/system/ping` every 5 minutes to prevent the free-tier dyno from sleeping.
-
----
-
-## 🤝 Contributing
-
-Contributions, bug reports, and feature requests are welcome. Please open an issue or pull request on [GitHub](https://github.com/Shadow-Howl-Sec/wolfeye).
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m "feat: add your feature"`
-4. Push and open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for full terms.
-
-> You are free to use, modify, and distribute this software. Modified versions must carry prominent notices of changes. The Apache 2.0 license also provides an express grant of patent rights from contributors.
-
----
-
-<div align="center">
-  <sub>Built with 🧠 by the TECHWOLF</sub>
-</div>
+Apache License 2.0. See [LICENSE](LICENSE).

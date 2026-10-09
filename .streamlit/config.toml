@@ -1,0 +1,4 @@
+[server]
+# Torch exposes dynamic classes that Streamlit's watcher probes as modules.
+# Disable probing to avoid noisy torch.classes warnings during dashboard startup.
+fileWatcherType = "none"

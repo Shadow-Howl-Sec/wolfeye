@@ -9,8 +9,6 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.utils.class_weight import compute_class_weight
 from ml.cnn_lstm.config import (
     TARGET_COLUMN, RANDOM_SEED, TEST_SIZE, VAL_SIZE,
     NUM_ORIGINAL_FEATURES, CNN_1D_INPUT_SHAPE,
@@ -129,6 +127,7 @@ def split_and_scale_data(X: np.ndarray, y: np.ndarray, feature_names: list, enco
     and calculates square-root moderated class weights to prevent probability calibration collapse.
     """
     print("\n--- STEP 5, 6 & 7: TRAIN/TEST SPLIT, SCALING & MODERATED CLASS WEIGHTS ---")
+    from sklearn.model_selection import train_test_split
     
     X_train_val, X_test, y_train_val, y_test = train_test_split(
         X, y, test_size=TEST_SIZE, random_state=RANDOM_SEED, stratify=y

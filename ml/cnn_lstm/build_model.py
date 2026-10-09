@@ -7,7 +7,6 @@ os.environ['KERAS_BACKEND'] = 'torch'
 
 import keras
 from keras import layers, models, optimizers, ops
-from sklearn.ensemble import RandomForestClassifier
 
 @keras.saving.register_keras_serializable(package="ml.cnn_lstm.build_model")
 class CategoricalFocalLoss(keras.losses.Loss):
@@ -111,6 +110,8 @@ def build_random_forest_baseline(random_state: int = 42) -> RandomForestClassifi
     """
     Constructs Random Forest baseline classifier for comparative evaluation.
     """
+    from sklearn.ensemble import RandomForestClassifier
+
     return RandomForestClassifier(
         n_estimators=100,
         max_depth=20,
