@@ -54,7 +54,7 @@ def list_iocs():
         status      str  new | investigated | watchlisted | closed
         watchlisted bool true | false
         q           str  search substring in value
-        min_score   float  minimum anomaly_score
+        min_score   float  minimum risk_score
         sort        str  score | created_at | first_seen (default: created_at)
         order       str  asc | desc (default: desc)
     """
@@ -78,13 +78,13 @@ def list_iocs():
     if q := request.args.get("q"):
         query = query.filter(IOC.value.ilike(f"%{q}%"))
     if min_score := request.args.get("min_score", type=float):
-        query = query.filter(IOC.anomaly_score >= min_score)
+        query = query.filter(IOC.risk_score >= min_score)
 
     # Sorting
     sort_field = request.args.get("sort", "created_at")
     order = request.args.get("order", "desc")
     sort_col = {
-        "score": IOC.anomaly_score,
+        "score": IOC.risk_score,
         "created_at": IOC.created_at,
         "first_seen": IOC.first_seen,
     }.get(sort_field, IOC.created_at)
@@ -143,7 +143,7 @@ def export():
 
 @iocs_bp.route("/<int:ioc_id>", methods=["GET"])
 def get_ioc(ioc_id: int):
-    """Return a single IOC with enrichment data and anomaly score."""
+    """Return a single IOC with enrichment data and its risk/anomaly scores."""
     ioc = IOC.query.get_or_404(ioc_id)
     return jsonify(ioc.to_dict(include_enrichment=True)), 200
 

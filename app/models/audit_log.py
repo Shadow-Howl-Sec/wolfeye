@@ -32,7 +32,13 @@ class AuditAction:
     STATUS_CHANGED = "status_changed"
     INGESTED = "ingested"
     ENRICHED = "enriched"
-    SCORED = "anomaly_scored"
+    SCORED = "risk_scored"
+    BLOCK_CREATED = "block_created"
+    BLOCK_REMOVED = "block_removed"
+    ALLOW_CREATED = "allow_created"
+    ALLOW_REMOVED = "allow_removed"
+    REVIEW_DECISION = "review_decision"
+    NODE_TOKEN_ROTATED = "node_token_rotated"
 
 
 class AuditLog(db.Model):
@@ -53,8 +59,10 @@ class AuditLog(db.Model):
     # The canonical action name (see AuditAction constants)
     action: str = db.Column(db.String(64), nullable=False)
 
-    # Username of the actor (system or analyst)
+    # Username of the actor (system, analyst or node)
     performed_by: str = db.Column(db.String(128), nullable=False, default="system")
+    actor_type: str = db.Column(db.String(32), nullable=False, default="system")
+    node_id: int | None = db.Column(db.Integer, db.ForeignKey("node.id", ondelete="SET NULL"), nullable=True)
 
     # Optional extra context (e.g., previous → new status)
     detail: str | None = db.Column(db.Text, nullable=True)
@@ -65,6 +73,7 @@ class AuditLog(db.Model):
 
     # Relationship back to IOC
     ioc: "IOC" = db.relationship("IOC", back_populates="audit_logs")
+    node: "Node" = db.relationship("Node", back_populates="audit_logs")
 
     # ------------------------------------------------------------------
     # Helpers
@@ -76,6 +85,8 @@ class AuditLog(db.Model):
             "ioc_id": self.ioc_id,
             "action": self.action,
             "performed_by": self.performed_by,
+            "actor_type": self.actor_type,
+            "node_id": self.node_id,
             "detail": self.detail,
             "timestamp": self.timestamp.isoformat(),
         }

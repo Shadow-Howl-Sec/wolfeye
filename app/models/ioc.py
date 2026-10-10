@@ -37,6 +37,14 @@ class IOCType:
     EMAIL = "email"
 
 
+class ScoreMethod:
+    """Score sources used to judge IOC risk."""
+
+    UNSET = "unset"
+    HEURISTIC = "heuristic"
+    ISOLATION_FOREST = "isolation_forest"
+
+
 class IOC(db.Model):
     """
     Represents a single Indicator of Compromise ingested from a threat feed.
@@ -70,8 +78,11 @@ class IOC(db.Model):
     status: str = db.Column(db.String(32), nullable=False, default=IOCStatus.NEW)
     watchlisted: bool = db.Column(db.Boolean, nullable=False, default=False)
 
-    # ML anomaly score set by Member B's model (nullable until scored)
+    # The production risk score is the heuristic score from the live threat model.
+    # The Isolation Forest score is stored separately as a secondary signal.
+    risk_score: float | None = db.Column(db.Float, nullable=True)
     anomaly_score: float | None = db.Column(db.Float, nullable=True)
+    score_method: str = db.Column(db.String(32), nullable=False, default=ScoreMethod.UNSET)
 
     # Relationships
     enrichment: "Enrichment" = db.relationship(
@@ -96,7 +107,14 @@ class IOC(db.Model):
     # Helpers
     # ------------------------------------------------------------------
 
+    def normalize_score_fields(self) -> None:
+        """Backfill legacy rows that only stored the heuristic score in anomaly_score."""
+        if self.score_method == ScoreMethod.UNSET and self.risk_score is None and self.anomaly_score is not None:
+            self.risk_score = float(self.anomaly_score)
+            self.score_method = ScoreMethod.HEURISTIC
+
     def to_dict(self, include_enrichment: bool = False) -> dict:
+        self.normalize_score_fields()
         data = {
             "id": self.id,
             "value": self.value,
@@ -106,7 +124,9 @@ class IOC(db.Model):
             "created_at": self.created_at.isoformat(),
             "status": self.status,
             "watchlisted": self.watchlisted,
+            "risk_score": self.risk_score,
             "anomaly_score": self.anomaly_score,
+            "score_method": self.score_method,
         }
         if include_enrichment and self.enrichment:
             data["enrichment"] = self.enrichment.to_dict()

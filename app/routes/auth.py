@@ -43,6 +43,19 @@ def login_required(f: Callable) -> Callable:
     return decorated
 
 
+def analyst_required(f: Callable) -> Callable:
+    """Require an analyst or admin-role session."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            return jsonify({"error": "Authentication required"}), 401
+        role = session.get("user_role")
+        if role not in {"analyst", "admin"}:
+            return jsonify({"error": "Analyst or admin access required"}), 403
+        return f(*args, **kwargs)
+    return decorated
+
+
 def admin_required(f: Callable) -> Callable:
     """Require an admin-role session."""
     @wraps(f)

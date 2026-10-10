@@ -155,13 +155,18 @@ def seed() -> None:
     for entry in data:
         enr_data = entry.pop("enrichment", {})
         try:
+            risk_score = entry.get("risk_score")
+            if risk_score is None:
+                risk_score = entry.get("anomaly_score")
             ioc = IOC(
                 value=entry["value"],
                 type=entry["type"],
                 source=entry["source"],
                 first_seen=entry["first_seen"],
                 status=entry.get("status", IOCStatus.NEW),
+                risk_score=risk_score,
                 anomaly_score=entry.get("anomaly_score"),
+                score_method="heuristic" if risk_score is not None else "unset",
             )
             db.session.add(ioc)
             db.session.flush()
@@ -170,13 +175,14 @@ def seed() -> None:
                 enr = Enrichment(ioc_id=ioc.id, **{k: v for k, v in enr_data.items() if hasattr(Enrichment, k)})
                 db.session.add(enr)
 
-            # Create alert for high-scoring IOCs
-            score = entry.get("anomaly_score") or 0
+            # Create alert for high-scoring IOCs using the production risk score as the primary signal.
+            score = ioc.risk_score or entry.get("risk_score") or entry.get("anomaly_score") or 0
             if score >= 0.60:
                 severity = AlertSeverity.from_score(score)
                 alert = Alert(
                     ioc_id=ioc.id,
-                    anomaly_score=score,
+                    risk_score=ioc.risk_score or score,
+                    anomaly_score=ioc.anomaly_score or entry.get("anomaly_score") or score,
                     severity=severity,
                     status=choice([AlertStatus.OPEN, AlertStatus.OPEN, AlertStatus.RESOLVED]),
                     created_at=entry["first_seen"],

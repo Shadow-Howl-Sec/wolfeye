@@ -1,10 +1,10 @@
 """
 app/models/alert.py
 --------------------
-Alert — generated when an IOC's anomaly score crosses a threshold.
+Alert — generated when an IOC's risk score crosses a threshold.
 
 Schema:
-    Alert(id, ioc_id→IOC, anomaly_score, severity, status, created_at)
+    Alert(id, ioc_id→IOC, risk_score, anomaly_score, severity, status, created_at)
 """
 
 from __future__ import annotations
@@ -19,20 +19,31 @@ if TYPE_CHECKING:
 
 
 class AlertSeverity:
-    """Severity banding based on anomaly score (coordinated with Member B)."""
+    """Severity banding based on the production risk score."""
+
     LOW = "low"           # 0.60 – 0.69
     MEDIUM = "medium"     # 0.70 – 0.79
     HIGH = "high"         # 0.80 – 0.89
     CRITICAL = "critical" # 0.90+
 
     @staticmethod
-    def from_score(score: float) -> str:
-        if score >= 0.90:
+    def from_score(
+        score: float,
+        low: float = 0.60,
+        medium: float = 0.70,
+        high: float = 0.80,
+        critical: float = 0.90,
+    ) -> str:
+        if score is None:
+            return AlertSeverity.LOW
+        if score >= critical:
             return AlertSeverity.CRITICAL
-        if score >= 0.80:
+        if score >= high:
             return AlertSeverity.HIGH
-        if score >= 0.70:
+        if score >= medium:
             return AlertSeverity.MEDIUM
+        if score >= low:
+            return AlertSeverity.LOW
         return AlertSeverity.LOW
 
 
@@ -46,8 +57,8 @@ class AlertStatus:
 
 class Alert(db.Model):
     """
-    Alert record created by the alerting service when an IOC's anomaly
-    score exceeds the configured threshold.
+    Alert record created by the alerting service when an IOC's risk score
+    exceeds the configured threshold.
     """
 
     __tablename__ = "alert"
@@ -58,10 +69,12 @@ class Alert(db.Model):
         db.Integer, db.ForeignKey("ioc.id", ondelete="CASCADE"), nullable=False
     )
 
-    # Score snapshot at the time the alert was created
-    anomaly_score: float = db.Column(db.Float, nullable=False)
+    # Score snapshot at the time the alert was created. The production risk score
+    # is the primary signal for alert severity; anomaly_score remains a secondary model signal.
+    risk_score: float | None = db.Column(db.Float, nullable=True)
+    anomaly_score: float = db.Column(db.Float, nullable=False, default=0.0)
 
-    # Derived from score via AlertSeverity.from_score()
+    # Derived from the risk score via AlertSeverity.from_score()
     severity: str = db.Column(db.String(16), nullable=False, default=AlertSeverity.LOW)
 
     # Workflow state
@@ -92,7 +105,8 @@ class Alert(db.Model):
         data = {
             "id": self.id,
             "ioc_id": self.ioc_id,
-            "anomaly_score": round(self.anomaly_score, 4),
+            "risk_score": round(self.risk_score, 4) if self.risk_score is not None else None,
+            "anomaly_score": round(self.anomaly_score, 4) if self.anomaly_score is not None else None,
             "severity": self.severity,
             "status": self.status,
             "created_at": self.created_at.isoformat(),

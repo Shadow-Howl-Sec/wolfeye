@@ -69,6 +69,8 @@ def create_app(config_name: str | None = None) -> Flask:
     from app.routes.observations import observations_bp
     from app.routes.integrations import integrations_bp
     from app.routes.main import main_bp
+    from app.routes.enforcement import enforcement_bp
+    from app.routes.review import review_bp
 
     for bp in (
         main_bp,
@@ -79,6 +81,8 @@ def create_app(config_name: str | None = None) -> Flask:
         system_bp,
         observations_bp,
         integrations_bp,
+        enforcement_bp,
+        review_bp,
     ):
         app.register_blueprint(bp)
 
@@ -118,22 +122,34 @@ def _seed_default_users(app: Flask) -> None:
     from app.models.user import User
 
     demo_username = app.config.get("DEMO_USERNAME", "demo")
+    demo_password = app.config.get("DEMO_PASSWORD", "wolfeye-demo")
+    analyst_username = app.config.get("ANALYST_USERNAME", "analyst")
+    analyst_password = app.config.get("ANALYST_PASSWORD", "wolfeye-analyst")
     admin_username = app.config.get("ADMIN_USERNAME", "admin")
+    admin_password = app.config.get("ADMIN_PASSWORD", "change-me-admin-password")
 
     if not User.query.filter_by(username=demo_username).first():
         demo = User(
             username=demo_username,
             role="readonly",
         )
-        demo.set_password(app.config.get("DEMO_PASSWORD", "wolfeye-demo"))
+        demo.set_password(demo_password)
         db.session.add(demo)
+
+    if not User.query.filter_by(username=analyst_username).first():
+        analyst = User(
+            username=analyst_username,
+            role="analyst",
+        )
+        analyst.set_password(analyst_password)
+        db.session.add(analyst)
 
     if not User.query.filter_by(username=admin_username).first():
         admin = User(
             username=admin_username,
             role="admin",
         )
-        admin.set_password(app.config.get("ADMIN_PASSWORD", "change-me"))
+        admin.set_password(admin_password)
         db.session.add(admin)
 
     db.session.commit()

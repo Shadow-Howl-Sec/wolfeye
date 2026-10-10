@@ -22,6 +22,7 @@ from app import db
 
 class UserRole:
     READONLY = "readonly"
+    ANALYST = "analyst"
     ADMIN = "admin"
 
 
@@ -60,6 +61,10 @@ class User(db.Model):
     @property
     def is_admin(self) -> bool:
         return self.role == UserRole.ADMIN
+
+    @property
+    def is_analyst(self) -> bool:
+        return self.role == UserRole.ANALYST
 
     @property
     def is_readonly(self) -> bool:

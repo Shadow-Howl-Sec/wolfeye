@@ -58,7 +58,7 @@ def summary():
     open_alerts = Alert.query.filter_by(status="open").count()
     critical_alerts = Alert.query.filter_by(severity=AlertSeverity.CRITICAL, status="open").count()
     watchlisted = IOC.query.filter_by(watchlisted=True).count()
-    with_score = IOC.query.filter(IOC.anomaly_score.isnot(None)).count()
+    with_score = IOC.query.filter(IOC.risk_score.isnot(None)).count()
     enriched = db.session.query(func.count(Enrichment.id)).scalar()
     resolved_today = Alert.query.filter(
         Alert.status == "resolved", Alert.updated_at >= cutoff_24h

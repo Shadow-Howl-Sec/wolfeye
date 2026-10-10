@@ -39,7 +39,7 @@ def list_alerts():
         severity    low | medium | high | critical
         status      open | investigating | resolved | false_positive
         ioc_id      int — filter by IOC
-        sort        created_at | severity | anomaly_score (default: created_at)
+        sort        created_at | severity | risk_score | anomaly_score (default: created_at)
         order       asc | desc (default: desc)
     """
     page = max(1, request.args.get("page", 1, type=int))
@@ -63,6 +63,7 @@ def list_alerts():
     sort_col = {
         "created_at": Alert.created_at,
         "severity": Alert.severity,
+        "risk_score": Alert.risk_score,
         "anomaly_score": Alert.anomaly_score,
     }.get(sort_field, Alert.created_at)
 

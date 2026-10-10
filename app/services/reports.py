@@ -21,6 +21,7 @@ def build_incident_report(alert_id: int) -> bytes:
     <table><tr><th>Indicator</th><td>{escape(ioc.value)}</td></tr>
     <tr><th>Type</th><td>{escape(ioc.type)}</td></tr><tr><th>Source</th><td>{escape(ioc.source)}</td></tr>
     <tr><th>Severity</th><td>{escape(alert.severity)}</td></tr>
+    <tr><th>Risk score</th><td>{(alert.risk_score if alert.risk_score is not None else alert.anomaly_score):.4f}</td></tr>
     <tr><th>Anomaly score</th><td>{alert.anomaly_score:.4f}</td></tr>
     <tr><th>Status</th><td>{escape(alert.status)}</td></tr></table>
     <h2>Analyst notes</h2><p>{escape(alert.notes or "None recorded.")}</p></body></html>"""
@@ -32,11 +33,13 @@ def build_incident_report(alert_id: int) -> bytes:
         # usable while retaining WeasyPrint as the production renderer.
         import logging
         logging.getLogger(__name__).warning("WeasyPrint unavailable, using basic PDF renderer: %s", exc)
+        score_value = alert.risk_score if alert.risk_score is not None else alert.anomaly_score
         return _basic_pdf([
             "WolfEye Incident Report",
             f"Indicator: {ioc.value}",
             f"Type: {ioc.type}  Source: {ioc.source}",
-            f"Severity: {alert.severity}  Score: {alert.anomaly_score:.4f}",
+            f"Severity: {alert.severity}  Risk Score: {score_value:.4f}",
+            f"Anomaly Score: {alert.anomaly_score:.4f}",
             f"Status: {alert.status}",
             f"Notes: {alert.notes or 'None recorded.'}",
         ])

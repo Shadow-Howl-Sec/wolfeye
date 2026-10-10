@@ -1,10 +1,10 @@
 """
 app/services/alerting.py
 -------------------------
-Converts Member B's anomaly scores into Alert records and optionally
-sends email notifications for high-severity alerts.
+Converts risk scores into Alert records and optionally sends email
+notifications for high-severity alerts.
 
-Severity banding (agreed with Member B):
+Severity banding:
     score >= 0.90  → Critical
     score >= 0.80  → High
     score >= 0.70  → Medium
@@ -37,31 +37,21 @@ def create_alert_if_needed(
     score: float,
     threshold: float = 0.60,
 ) -> Alert | None:
-    """
-    Create an Alert for an IOC if its anomaly score exceeds the threshold
-    AND no open alert already exists for it.
-
-    Args:
-        ioc:       The IOC ORM object.
-        score:     Anomaly score from Member B's model (0-1).
-        threshold: Minimum score to generate an alert.
-
-    Returns:
-        The created Alert, or None if no alert was warranted.
-    """
-    if score < threshold:
+    """Create an alert from the IOC's risk score when it crosses the configured threshold."""
+    risk_score = float(score if score is not None else 0.0)
+    if risk_score < threshold:
         return None
 
-    # Skip if there is already an open alert for this IOC
     existing = Alert.query.filter_by(ioc_id=ioc.id, status=AlertStatus.OPEN).first()
     if existing:
         logger.debug("IOC %d already has an open alert, skipping", ioc.id)
         return None
 
-    severity = AlertSeverity.from_score(score)
+    severity = AlertSeverity.from_score(risk_score)
     alert = Alert(
         ioc_id=ioc.id,
-        anomaly_score=score,
+        risk_score=risk_score,
+        anomaly_score=getattr(ioc, "anomaly_score", risk_score) or risk_score,
         severity=severity,
         status=AlertStatus.OPEN,
         created_at=datetime.now(timezone.utc),
@@ -99,17 +89,16 @@ def run_alerting(app) -> dict[str, Any]:
         Summary dict with counts.
     """
     with app.app_context():
-        threshold: float = app.config.get("ANOMALY_ALERT_THRESHOLD", 0.60)
+        threshold: float = app.config.get("ALERT_MIN_SCORE", app.config.get("ANOMALY_ALERT_THRESHOLD", 0.60))
 
-        scored_iocs = IOC.query.filter(IOC.anomaly_score.isnot(None)).all()
+        scored_iocs = IOC.query.filter(IOC.risk_score.isnot(None)).all()
         created = 0
         skipped = 0
 
         for ioc in scored_iocs:
-            alert = create_alert_if_needed(ioc, ioc.anomaly_score, threshold)
+            alert = create_alert_if_needed(ioc, ioc.risk_score, threshold)
             if alert:
                 created += 1
-                # Fire email for high/critical
                 if alert.severity in (AlertSeverity.HIGH, AlertSeverity.CRITICAL):
                     _send_email_alert(alert, ioc, app.config)
             else:
@@ -143,7 +132,7 @@ def _send_email_alert(alert: Alert, ioc: IOC, config: dict) -> bool:
         f"  Indicator : {ioc.value}\n"
         f"  Type      : {ioc.type}\n"
         f"  Source    : {ioc.source}\n"
-        f"  Score     : {alert.anomaly_score:.4f}\n"
+        f"  Risk score: {alert.risk_score if alert.risk_score is not None else alert.anomaly_score:.4f}\n"
         f"  Severity  : {alert.severity}\n"
         f"  Detected  : {alert.created_at.isoformat()}\n\n"
         f"Log in to the WolfEye dashboard to investigate."
