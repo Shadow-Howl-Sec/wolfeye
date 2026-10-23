@@ -18,6 +18,7 @@ from app.models.review_item import ReviewItem  # noqa: F401
 from app.models.flow_record import FlowRecord  # noqa: F401
 from app.models.event_log import EventLog  # noqa: F401
 from app.models.config_setting import ConfigSetting  # noqa: F401
+from app.models.threat_detection import ThreatDetection  # noqa: F401
 
 __all__ = [
     "IOC",
@@ -33,4 +34,5 @@ __all__ = [
     "FlowRecord",
     "EventLog",
     "ConfigSetting",
+    "ThreatDetection",
 ]

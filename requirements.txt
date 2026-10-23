@@ -86,6 +86,7 @@ torch>=2.0.0
 Flask-Cors>=4.0.0
 APScheduler>=3.10.0
 gunicorn>=21.2.0
+scapy>=2.5.0
 WeasyPrint>=62.0
 pymisp>=2.4.190
 pycti==7.260227.0

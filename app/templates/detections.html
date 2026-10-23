@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Packet Detections{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+  <h1 class="page-title"><i class="bi bi-activity me-2 text-accent"></i>Packet detections</h1>
+  <p class="page-subtitle text-muted">Metadata-only network threat analysis and response actions.</p>
+</div>
+<div class="card card-dark">
+  <div class="card-header"><h2 class="card-title mb-0">Recent detection results</h2></div>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead><tr><th>Severity</th><th>Source</th><th>Destination</th><th>Threat</th><th>Score</th><th>Decision</th><th>Action</th></tr></thead>
+      <tbody id="detections-table"><tr><td colspan="7" class="text-center text-muted py-5">Loading detections…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/detections.js') }}"></script>{% endblock %}

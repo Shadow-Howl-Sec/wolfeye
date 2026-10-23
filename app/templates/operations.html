@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Operations{% endblock %}
+{% block content %}
+<section class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+  <div>
+    <div class="eyebrow">WOLFEYE / DATA PLANE / CONTROL</div>
+    <h1 class="page-title"><i class="bi bi-sliders2 me-2 text-accent"></i>Operations control</h1>
+    <p class="page-subtitle text-muted">Review suspicious traffic, manage decisions, and validate live detection.</p>
+  </div>
+  <button class="btn btn-outline-secondary" id="operations-refresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+</section>
+
+<div id="operations-message" class="mb-3" role="status"></div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="card card-dark ops-stat"><span>CONTROL PLANE</span><strong id="ops-health">—</strong><small id="ops-db">Checking…</small></div></div>
+  <div class="col-md-3"><div class="card card-dark ops-stat"><span>OPEN ALERTS</span><strong id="ops-alerts">—</strong><small>requiring attention</small></div></div>
+  <div class="col-md-3"><div class="card card-dark ops-stat"><span>LIST VERSION</span><strong id="ops-list-version">—</strong><small>enforcement snapshot</small></div></div>
+  <div class="col-md-3"><div class="card card-dark ops-stat"><span>MODEL MODE</span><strong id="ops-model-mode">—</strong><small>ML never blocks alone</small></div></div>
+</div>
+<div class="card card-dark mb-3">
+  <div class="card-body ops-config-grid">
+    <div><span>NODE</span><strong id="ops-node">—</strong></div>
+    <div><span>DEPLOYMENT</span><strong id="ops-mode">—</strong></div>
+    <div><span>INLINE</span><strong id="ops-inline">—</strong></div>
+    <div><span>AUTO BLOCK</span><strong id="ops-blocking">—</strong></div>
+    <div><span>DRY RUN</span><strong id="ops-dry-run">—</strong></div>
+    <div><span>CAPTURE</span><strong id="ops-capture">—</strong></div>
+    <div><span>FLOW FEATURES</span><strong id="ops-features">—</strong></div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-7">
+    <div class="card card-dark mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="card-title mb-0">Expert review queue</h2>
+        <select class="form-select form-select-sm ops-filter" id="review-status"><option value="open">Open</option><option value="">All</option><option value="blocked">Blocked</option><option value="cleared">Cleared</option></select>
+      </div>
+      <div class="table-responsive"><table class="table table-dark table-hover align-middle mb-0">
+        <thead><tr><th>Subject</th><th>Severity</th><th>Score</th><th>Created</th><th>Decision</th></tr></thead>
+        <tbody id="review-table"><tr><td colspan="5" class="text-center text-muted py-4">Loading review queue…</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <div class="card card-dark">
+      <div class="card-header"><h2 class="card-title mb-0">Analyze a flow</h2></div>
+      <div class="card-body">
+        <p class="text-muted small">Metadata only. Use this to test packet scoring; no payload is accepted.</p>
+        <form id="packet-form" class="row g-2">
+          <div class="col-md-6"><label class="form-label">Source IP<input class="form-control" name="src_ip" value="203.0.113.10" required></label></div>
+          <div class="col-md-6"><label class="form-label">Destination IP<input class="form-control" name="dst_ip" value="198.51.100.20"></label></div>
+          <div class="col-md-4"><label class="form-label">Protocol<select class="form-select" name="protocol"><option>tcp</option><option>udp</option><option>icmp</option></select></label></div>
+          <div class="col-md-4"><label class="form-label">Destination port<input class="form-control" name="dst_port" type="number" value="443" min="0" max="65535"></label></div>
+          <div class="col-md-4"><label class="form-label">TCP flags<input class="form-control" name="tcp_flags" value=""></label></div>
+          <div class="col-md-4"><label class="form-label">Packets<input class="form-control" name="packets" type="number" value="2" min="1"></label></div>
+          <div class="col-md-4"><label class="form-label">Bytes out<input class="form-control" name="bytes_out" type="number" value="1000" min="0"></label></div>
+          <div class="col-md-4"><label class="form-label">Duration (ms)<input class="form-control" name="duration_ms" type="number" value="5000" min="0"></label></div>
+          <div class="col-12"><button class="btn btn-primary" type="submit">Analyze flow</button></div>
+        </form>
+        <pre id="packet-result" class="ops-result mt-3 d-none"></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-5">
+    <div class="card card-dark mb-3">
+      <div class="card-header"><h2 class="card-title mb-0">Add enforcement entry</h2></div>
+      <div class="card-body">
+        <form id="entry-form" class="row g-2">
+          <div class="col-4"><label class="form-label">Action<select class="form-select" name="action"><option value="blocks">Block</option><option value="allows">Allow</option></select></label></div>
+          <div class="col-4"><label class="form-label">Kind<select class="form-select" name="kind"><option>ip</option><option>cidr</option><option>domain</option><option>url_prefix</option></select></label></div>
+          <div class="col-4"><label class="form-label">TTL seconds<input class="form-control" name="ttl" type="number" min="0" placeholder="Permanent"></label></div>
+          <div class="col-12"><label class="form-label">Value<input class="form-control" name="value" placeholder="203.0.113.10 or example.com" required></label></div>
+          <div class="col-12"><label class="form-label">Reason<input class="form-control" name="reason" value="Managed from operations"></label></div>
+          <div class="col-12"><button class="btn btn-outline-danger" type="submit">Save enforcement entry</button></div>
+        </form>
+      </div>
+    </div>
+    <div class="card card-dark">
+      <div class="card-header"><h2 class="card-title mb-0">Active enforcement lists</h2></div>
+      <div class="card-body" id="enforcement-lists"><div class="text-muted">Loading lists…</div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/operations.js') }}"></script>{% endblock %}

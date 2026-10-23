@@ -94,6 +94,15 @@ def list_review_items():
     }), 200
 
 
+@review_bp.route("/alerts/<int:alert_id>", methods=["POST"])
+@analyst_required
+def create_review_item(alert_id: int):
+    """Put an alert into the expert review queue."""
+    alert = Alert.query.get_or_404(alert_id)
+    item = _build_review_item(alert)
+    return jsonify({"item": item.to_dict()}), 201
+
+
 @review_bp.route("/<int:review_id>", methods=["GET"])
 def get_review_item(review_id: int):
     """View the detailed evidence for a review item."""

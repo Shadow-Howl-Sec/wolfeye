@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="auth-shell">
+  <div class="card card-dark auth-card">
+    <div class="card-body p-4">
+      <div class="eyebrow">WOLFEYE / CONTROL PLANE</div>
+      <h1 class="page-title mt-2">Sign in</h1>
+      <p class="text-muted">Use an analyst or administrator account to manage enforcement.</p>
+      <form id="login-form" class="mt-4">
+        <label class="form-label" for="login-username">Username</label>
+        <input class="form-control mb-3" id="login-username" autocomplete="username" required>
+        <label class="form-label" for="login-password">Password</label>
+        <input class="form-control mb-3" id="login-password" type="password" autocomplete="current-password" required>
+        <button class="btn btn-primary w-100" type="submit">Sign in</button>
+        <div id="login-message" class="small mt-3" role="status"></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/login.js') }}"></script>{% endblock %}

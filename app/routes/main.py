@@ -22,6 +22,11 @@ def alerts():
     return render_template("alerts.html")
 
 
+@main_bp.get("/detections")
+def detections():
+    return render_template("detections.html")
+
+
 @main_bp.get("/map")
 def map_view():
     return render_template("map.html")
@@ -30,3 +35,13 @@ def map_view():
 @main_bp.get("/reports")
 def reports():
     return render_template("reports.html")
+
+
+@main_bp.get("/operations")
+def operations():
+    return render_template("operations.html")
+
+
+@main_bp.get("/login")
+def login():
+    return render_template("login.html")

@@ -165,8 +165,8 @@ with tab1:
         actual_class_name = CLASS_MAPPING[selected_preset]
         btn_col1, btn_col2 = st.columns([1, 1])
         
-        test_preset_clicked = btn_col1.button(f"⚡ Test Sample from: {selected_preset}", type="primary", use_container_width=True)
-        random_sample_clicked = btn_col2.button(f"🎲 Random Sample ({selected_preset})", use_container_width=True)
+        test_preset_clicked = btn_col1.button(f"⚡ Test Sample from: {selected_preset}", type="primary", width="stretch")
+        random_sample_clicked = btn_col2.button(f"🎲 Random Sample ({selected_preset})", width="stretch")
 
         if "current_sample" not in st.session_state:
             st.session_state["current_sample"] = None
@@ -264,7 +264,7 @@ with tab1:
                         feat, value=float(current_vals.get(feat, 0.0)), key=f"inp_{feat}"
                     )
 
-            submit_manual_btn = st.form_submit_button("⚡ Analyze Custom Form Values", type="primary", use_container_width=True)
+            submit_manual_btn = st.form_submit_button("⚡ Analyze Custom Form Values", type="primary", width="stretch")
 
         if submit_manual_btn:
             st.markdown("---")
@@ -312,14 +312,14 @@ with tab2:
     with img_col1:
         st.subheader("Confusion Matrix")
         if os.path.exists(CONFUSION_MATRIX_PATH):
-            st.image(CONFUSION_MATRIX_PATH, use_container_width=True)
+            st.image(CONFUSION_MATRIX_PATH, width="stretch")
         else:
             st.warning("Confusion matrix image not found.")
 
     with img_col2:
         st.subheader("Multiclass One-vs-Rest ROC Curve")
         if os.path.exists(ROC_CURVE_PATH):
-            st.image(ROC_CURVE_PATH, use_container_width=True)
+            st.image(ROC_CURVE_PATH, width="stretch")
         else:
             st.warning("ROC curve image not found.")
 

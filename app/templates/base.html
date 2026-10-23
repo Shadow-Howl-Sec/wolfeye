@@ -50,6 +50,18 @@
           <span class="nav-badge danger" id="nav-alert-count"></span>
         </a>
       </li>
+      <li class="nav-item {% if request.endpoint == 'main.detections' %}active{% endif %}">
+        <a href="{{ url_for('main.detections') }}" class="nav-link">
+          <i class="bi bi-activity"></i>
+          <span>Packet Detections</span>
+        </a>
+      </li>
+      <li class="nav-item {% if request.endpoint == 'main.operations' %}active{% endif %}">
+        <a href="{{ url_for('main.operations') }}" class="nav-link">
+          <i class="bi bi-sliders2"></i>
+          <span>Operations</span>
+        </a>
+      </li>
       <li class="nav-item {% if request.endpoint == 'main.map_view' %}active{% endif %}">
         <a href="{{ url_for('main.map_view') }}" class="nav-link">
           <i class="bi bi-globe2"></i>
@@ -78,6 +90,11 @@
           <i class="bi bi-box-arrow-right"></i> Sign out
         </button>
       </form>
+      {% endif %}
+      {% if not session.get('user_id') %}
+      <a href="{{ url_for('main.login') }}" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+        <i class="bi bi-box-arrow-in-right"></i> Sign in
+      </a>
       {% endif %}
     </div>
   </nav>

@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, current_app, jsonify
 
 from app import db
 
@@ -72,4 +72,15 @@ def health():
             "open_alerts": open_alerts,
         },
         "scheduler": get_job_status(),
+        "data_plane": {
+            "node_name": current_app.config.get("NODE_NAME", "default-node"),
+            "mode": current_app.config.get("NODE_MODE", "gateway"),
+            "inline_enabled": bool(current_app.config.get("INLINE_ENABLED", False)),
+            "blocking_enabled": bool(current_app.config.get("BLOCKING_ENABLED", True)),
+            "dry_run": bool(current_app.config.get("DRY_RUN", False)),
+            "capture_enabled": bool(current_app.config.get("CAPTURE_ENABLED", False)),
+            "capture_interface": current_app.config.get("CAPTURE_INTERFACE", ""),
+            "flow_model_mode": current_app.config.get("FLOW_MODEL_MODE", "shadow"),
+            "flow_feature_count": 52,
+        },
     }), 200 if db_ok else 503

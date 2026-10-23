@@ -76,6 +76,7 @@ class BaseConfig:
     NODE_TOKEN: str = os.getenv("NODE_TOKEN", "")
     NODE_NAME: str = os.getenv("NODE_NAME", "default-node")
     NODE_MODE: str = os.getenv("NODE_MODE", "gateway")
+    INLINE_ENABLED: bool = os.getenv("INLINE_ENABLED", "false").lower() == "true"
     UPSTREAM_URLS: list[str] = [
         value.strip() for value in os.getenv("UPSTREAM_URLS", "http://127.0.0.1:5000").split(",") if value.strip()
     ]
